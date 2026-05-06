@@ -8,9 +8,8 @@ Sistema para monitorar, baixar e buscar no Diário Oficial do TCE-CE de forma lo
 - FastAPI
 - SQLite
 - Docker e Docker Compose
-- BeautifulSoup (Coleta)
+- SeleniumBase e Chrome Headless (Coleta)
 - PyMuPDF (Extração de texto)
-- APScheduler (Agendamento)
 
 ## Executando com Docker
 
@@ -38,6 +37,24 @@ Busca por termos no banco de dados local (arquivos PDF já processados).
 curl "http://localhost:8000/buscar?q=licitação"
 ```
 
+### `GET /diarios`
+
+Lista os diários já coletados e armazenados no banco de dados local.
+
+**Exemplo de uso:**
+```bash
+curl "http://localhost:8000/diarios"
+```
+
+### `POST /coletar`
+
+Inicia o processo de coleta manual de todos os PDFs disponíveis na página do TCE-CE. O processo roda no backend usando o SeleniumBase em modo Headless.
+
+**Exemplo de uso:**
+```bash
+curl -X POST "http://localhost:8000/coletar"
+```
+
 ## Executando Localmente (Sem Docker)
 
 1. Crie um ambiente virtual e instale as dependências:
@@ -59,7 +76,8 @@ python -m app.collector
 
 ## Funcionamento
 
-- A aplicação realiza a coleta diária (agendada via APScheduler) do site do TCE-CE.
-- Os PDFs são baixados para a pasta `/data/pdfs`.
-- Os textos de cada página do PDF são extraídos e armazenados no banco SQLite em `/data/diario.db`.
+- A aplicação disponibiliza a rota `POST /coletar` para realizar a coleta do site do TCE-CE usando `seleniumbase` (Chrome Headless).
+- Todos os PDFs disponíveis na página são baixados para a pasta `/data/pdfs`.
+- Os textos de cada página dos novos PDFs são extraídos e armazenados no banco SQLite em `/data/diario.db`.
 - A API `/buscar` lê as informações no banco de dados, com normalização de texto (minúsculas e remoção de espaços extras) para melhorar as buscas.
+- A API `/diarios` lista os diários já baixados.
